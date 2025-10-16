@@ -29,4 +29,12 @@ A full-stack web application to help users create, manage, and generate PDF repo
 
 ## Tech Stack
 
-- **Frontend:** React,
+- **Frontend:** React, TypeScript, React Hook Form, Axios, Bootstrap
+- **Backend:** Node.js, Express, MongoDB, Mongoose
+- **PDF Generation:** PDFKit
+- **Development Tools:** Vite, Postman (for API testing)
+
+---
+
+## Project Structure
+

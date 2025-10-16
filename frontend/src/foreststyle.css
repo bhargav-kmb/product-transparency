@@ -1,0 +1,98 @@
+/* Full-page layout and background */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url('/forest.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #ecf0f1;
+}
+
+/* Centered container */
+.container {
+  background-color: rgba(44, 62, 80, 0.85); /* semi-transparent dark overlay */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Headings */
+h2 {
+  color: #ecf0f1;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Labels and inputs */
+.form-label {
+  color: #bdc3c7;
+  font-weight: 500;
+}
+
+.form-control {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid #7f8c8d;
+  color: #ecf0f1;
+  border-radius: 6px;
+}
+
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: #1abc9c;
+  box-shadow: none;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  padding: 10px 20px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background-color: #1abc9c;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #16a085;
+}
+
+.btn-success {
+  background-color: #27ae60;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #229954;
+}
+
+.btn-secondary {
+  background-color: #7f8c8d;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: #95a5a6;
+}
+
+/* Checkbox and links */
+input[type="checkbox"] {
+  accent-color: #1abc9c;
+}
+
+a {
+  color: #1abc9c;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

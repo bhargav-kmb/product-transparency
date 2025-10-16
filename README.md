@@ -35,6 +35,38 @@ A full-stack web application to help users create, manage, and generate PDF repo
 - **Development Tools:** Vite, Postman (for API testing)
 
 ---
+## To use this 
 
-## Project Structure
+## navigate to backend
+```bash
+cd backend
+```
+##install dependencies
+```
+npm install
+```
+##start server
+```
+npm start
+```
+##FrontEnd
+navigate to frontend
+```
+cd frontend
+```
+start server
+```
+npm run dev
+```
+Usage
+
+Open the frontend at http://localhost:5173 (Vite default port).
+
+Fill in  Product Info.
+
+AI-suggested questions will appear questions page.
+
+Enter answers and submit the product.
+
+Preview or download the PDF report.
 

@@ -45,10 +45,27 @@ cd backend
 ```
 npm install
 ```
-##start server
+##start back end server
 ```
-npm start
+node app.js
+
 ```
+then run run app.py in ai-services
+```
+cd ai-service
+```
+```
+python -m venv venv
+```
+
+```
+venv\Scripts\activate
+```
+```
+uvicorn ai-service.app:app --reload --port 5001
+```
+create a vite+type script  app in frontend folder and the run these commands
+
 ##FrontEnd
 navigate to frontend
 ```

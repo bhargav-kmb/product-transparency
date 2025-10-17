@@ -40,5 +40,7 @@ def generate_questions(payload: dict):
 
 
 
-# to run uvicorn ai-service.app:app --reload --port 5001
+# to run venv\Scripts\activate
+
+# uvicorn ai-service.app:app --reload --port 5001
 # 

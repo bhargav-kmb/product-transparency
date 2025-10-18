@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
+  res.send("Backend is running ");
 });
 
 // API routes

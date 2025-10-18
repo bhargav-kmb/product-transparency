@@ -22,15 +22,22 @@ export default function App() {
 
   const { control, handleSubmit, reset } = useForm<Step1Form>();
 
-  // Replace these URLs with your deployed backend
-  const BACKEND_BASE = "https://product-transparency-backend.vercel.app";
+  // ✅ Replace with your deployed backend URLs
+  const BACKEND_BASE = "https://product-transparency-backend.vercel.app"; // Node backend
+  const AI_BASE = "https://product-transparency-backend.vercel.app"; // FastAPI AI service (if separate)
 
-  // Step 1: Submit product info and fetch AI questions
+  // Step 1: Submit product info and fetch AI-generated questions
   const onStep1Submit = async (data: Step1Form) => {
     setProductData(data);
     setLoading(true);
+
     try {
-      const res = await axios.post(`${BACKEND_BASE}/api/suggest-questions`, data);
+      const res = await axios.post(
+        `${AI_BASE}/api/suggest-questions`,
+        data,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       const qs: Question[] = res.data.questions.map((q: string) => ({
         question: q,
         answer: "",
@@ -38,8 +45,8 @@ export default function App() {
       setQuestions(qs);
       setStep(2);
     } catch (err) {
-      alert("Failed to fetch AI questions.");
-      console.error(err);
+      console.error("AI question fetch error:", err);
+      alert("Failed to fetch AI questions. Make sure backend is running and CORS is enabled.");
     } finally {
       setLoading(false);
     }
@@ -49,26 +56,33 @@ export default function App() {
   const onStep2Submit = async () => {
     if (!productData) return;
     setLoading(true);
+
     try {
-      const payload = { ...productData, answers: questions };
-      const res = await axios.post(`${BACKEND_BASE}/api/products`, payload);
+      const payload = { ...productData, questions }; // send questions + answers
+      const res = await axios.post(
+        `${BACKEND_BASE}/api/products`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       setProductId(res.data.id);
       setStep(3);
     } catch (err) {
-      alert("Failed to save product.");
-      console.error(err);
+      console.error("Product save error:", err);
+      alert("Failed to save product. Check backend logs.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle answer input change
   const handleAnswerChange = (i: number, v: string) => {
     const newQs = [...questions];
     newQs[i].answer = v;
     setQuestions(newQs);
   };
 
-  // Step 3: View/download PDF report
+  // Step 3: View/download PDF
   const previewPDF = () => {
     if (!productId) return;
     window.open(`${BACKEND_BASE}/api/products/${productId}/report`, "_blank");

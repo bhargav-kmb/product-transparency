@@ -1,0 +1,16 @@
+{
+  "projects": [
+    {
+      "src": "frontend",
+      "use": "@vercel/static-build",
+      "buildCommand": "npm install && npm run build",
+      "outputDirectory": "dist"
+    },
+    {
+      "src": "backend",
+      "use": "@vercel/node",
+      "buildCommand": "npm install",
+      "outputDirectory": "api"
+    }
+  ]
+}

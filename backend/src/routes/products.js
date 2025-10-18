@@ -1,61 +1,52 @@
 const express = require("express");
-const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
-const Product = require("../../models/Product");
-
 const router = express.Router();
+const PDFDocument = require("pdfkit");
+const { collection } = require("../db");
 
-// ➕ Add a new product
-router.post("/products", async (req, res) => {
-  try {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json({ id: product._id });
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+// Step 2: Generate questions based on category
+router.post("/suggest-questions", async (req, res) => {
+  const { name, category } = req.body;
+
+  let questions = [];
+  if (category.toLowerCase().includes("food")) {
+    questions = ["Is the product organic?", "List ingredients.", "Any allergens?"];
+  } else {
+    questions = ["Provide safety/compliance certifications."];
   }
+
+  // Save to DB
+  await collection.insertOne({ name, category, questions, answers: [] });
+
+  res.json({ questions });
 });
 
-// 📄 Generate product PDF
-router.get("/products/:id/report", async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).send("Product not found");
+// Step 3: Generate PDF with answers
+router.post("/generate-pdf", async (req, res) => {
+  const { name, category, answers } = req.body;
 
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage();
-    const { width, height } = page.getSize();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontSize = 14;
+  const doc = new PDFDocument();
+  let filename = `${name.replace(/\s/g, "_")}.pdf`;
 
-    let y = height - 50;
-    page.drawText(`Product Report`, { x: 50, y, size: 20, font, color: rgb(0, 0, 0) });
-    y -= 40;
+  // Set headers
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    page.drawText(`Name: ${product.name}`, { x: 50, y, size: fontSize, font });
-    y -= 25;
-    page.drawText(`Category: ${product.category}`, { x: 50, y, size: fontSize, font });
-    y -= 35;
+  doc.pipe(res);
 
-    page.drawText("Questions & Answers:", { x: 50, y, size: fontSize + 2, font });
-    y -= 25;
+  doc.fontSize(18).text(`Product Transparency Report`, { align: "center" });
+  doc.moveDown();
+  doc.fontSize(14).text(`Product Name: ${name}`);
+  doc.text(`Category: ${category}`);
+  doc.moveDown();
 
-    product.questions.forEach((q, i) => {
-      const text = typeof q === "object"
-        ? `${i + 1}. ${q.question} - ${q.answer || ""}`
-        : `${i + 1}. ${q}`;
-      page.drawText(text, { x: 60, y, size: fontSize - 1, font });
-      y -= 20;
-    });
+  doc.text("Questions & Answers:");
+  answers.forEach((item, idx) => {
+    doc.moveDown(0.5);
+    doc.text(`${idx + 1}. Q: ${item.question}`);
+    doc.text(`   A: ${item.answer}`);
+  });
 
-    const pdfBytes = await pdfDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${product.name}.pdf"`);
-    res.send(Buffer.from(pdfBytes));
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error generating PDF");
-  }
+  doc.end();
 });
 
 module.exports = router;

@@ -1,14 +1,17 @@
-const mongoose = require('mongoose');
+// src/db.js
+require("dotenv").config();
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/product_transparency', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(' MongoDB Connected');
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not defined in environment variables");
+    }
+
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (err) {
-    console.error(' MongoDB connection failed:', err.message);
+    console.error(err);
     process.exit(1);
   }
 };

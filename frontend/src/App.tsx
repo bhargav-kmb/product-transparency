@@ -22,11 +22,15 @@ export default function App() {
 
   const { control, handleSubmit, reset } = useForm<Step1Form>();
 
+  // Replace these URLs with your deployed backend
+  const BACKEND_BASE = "https://product-transparency-backend.vercel.app";
+
+  // Step 1: Submit product info and fetch AI questions
   const onStep1Submit = async (data: Step1Form) => {
     setProductData(data);
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5001/api/suggest-questions", data);
+      const res = await axios.post(`${BACKEND_BASE}/api/suggest-questions`, data);
       const qs: Question[] = res.data.questions.map((q: string) => ({
         question: q,
         answer: "",
@@ -35,21 +39,24 @@ export default function App() {
       setStep(2);
     } catch (err) {
       alert("Failed to fetch AI questions.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Step 2: Submit answers and save product
   const onStep2Submit = async () => {
     if (!productData) return;
     setLoading(true);
     try {
-      const payload = { ...productData, questions };
-      const res = await axios.post("http://localhost:4000/api/products", payload);
+      const payload = { ...productData, answers: questions };
+      const res = await axios.post(`${BACKEND_BASE}/api/products`, payload);
       setProductId(res.data.id);
       setStep(3);
     } catch (err) {
       alert("Failed to save product.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -61,9 +68,10 @@ export default function App() {
     setQuestions(newQs);
   };
 
+  // Step 3: View/download PDF report
   const previewPDF = () => {
     if (!productId) return;
-    window.open(`http://localhost:4000/api/products/${productId}/report`, "_blank");
+    window.open(`${BACKEND_BASE}/api/products/${productId}/report`, "_blank");
   };
 
   const restart = () => {
@@ -138,7 +146,7 @@ export default function App() {
 
               <div className="d-flex justify-content-center mt-4">
                 <button className="btn btn-primary px-4" type="submit">
-                  Next 
+                  Next
                 </button>
               </div>
             </form>
@@ -164,10 +172,10 @@ export default function App() {
 
               <div className="d-flex justify-content-between mt-4">
                 <button className="btn btn-outline-secondary" onClick={() => setStep(1)}>
-                   Back
+                  Back
                 </button>
                 <button className="btn btn-success" onClick={onStep2Submit}>
-                  Submit 
+                  Submit
                 </button>
               </div>
             </>
@@ -179,10 +187,10 @@ export default function App() {
                 Product Saved Successfully!
               </h5>
               <button className="btn btn-primary me-2" onClick={previewPDF}>
-                 View / Download PDF
+                View / Download PDF
               </button>
               <button className="btn btn-outline-secondary" onClick={restart}>
-                 Add Another Product
+                Add Another Product
               </button>
             </div>
           )}

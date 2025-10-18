@@ -1,52 +1,65 @@
 const express = require("express");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
-const { collection } = require("../db");
+const Product = require("../models/Product");
 
-// Step 2: Generate questions based on category
+// Step 1: Suggest AI questions
 router.post("/suggest-questions", async (req, res) => {
   const { name, category } = req.body;
 
   let questions = [];
   if (category.toLowerCase().includes("food")) {
     questions = ["Is the product organic?", "List ingredients.", "Any allergens?"];
+  } else if (category.toLowerCase().includes("cosmetic")) {
+    questions = ["Does it have dermatological testing?", "Is it cruelty-free?", "Any harmful chemicals?"];
   } else {
     questions = ["Provide safety/compliance certifications."];
   }
 
-  // Save to DB
-  await collection.insertOne({ name, category, questions, answers: [] });
-
   res.json({ questions });
 });
 
-// Step 3: Generate PDF with answers
-router.post("/generate-pdf", async (req, res) => {
-  const { name, category, answers } = req.body;
+// Step 2: Save product + answers
+router.post("/products", async (req, res) => {
+  try {
+    const { name, category, questions } = req.body;
+    const product = new Product({ name, category, questions });
+    await product.save();
+    res.json({ id: product._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save product" });
+  }
+});
 
-  const doc = new PDFDocument();
-  let filename = `${name.replace(/\s/g, "_")}.pdf`;
+// Step 3: Generate PDF
+router.get("/products/:id/report", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).send("Product not found");
 
-  // Set headers
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    const doc = new PDFDocument();
+    res.setHeader("Content-Disposition", `attachment; filename=${product.name}.pdf`);
+    res.setHeader("Content-Type", "application/pdf");
 
-  doc.pipe(res);
+    doc.fontSize(18).text("📦 Product Transparency Report", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(14).text(`Product Name: ${product.name}`);
+    doc.text(`Category: ${product.category}`);
+    doc.moveDown();
 
-  doc.fontSize(18).text(`Product Transparency Report`, { align: "center" });
-  doc.moveDown();
-  doc.fontSize(14).text(`Product Name: ${name}`);
-  doc.text(`Category: ${category}`);
-  doc.moveDown();
+    product.questions.forEach((q, i) => {
+      doc.fontSize(12).text(`${i + 1}. ${q.question}`);
+      doc.text(`Answer: ${q.answer}`);
+      doc.moveDown();
+    });
 
-  doc.text("Questions & Answers:");
-  answers.forEach((item, idx) => {
-    doc.moveDown(0.5);
-    doc.text(`${idx + 1}. Q: ${item.question}`);
-    doc.text(`   A: ${item.answer}`);
-  });
-
-  doc.end();
+    doc.pipe(res);
+    doc.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to generate PDF");
+  }
 });
 
 module.exports = router;

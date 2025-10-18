@@ -1,46 +1,45 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from pymongo import MongoClient
+import os
 
 app = FastAPI()
 
-# Middleware for frontend access
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # or your frontend URL
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Direct MongoDB connection
-client = MongoClient("mongodb://localhost:27017/")
-db = client["product_transparency"]   # <--- This must be a string
+# MongoDB connection
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+client = MongoClient(MONGO_URI)
+db = client["product_transparency"]
 collection = db["products"]
 
-@app.get("/")
-def root():
-    return {"message": "✅ FastAPI + MongoDB connected!"}
+class ProductInput(BaseModel):
+    name: str
+    category: str
 
 @app.post("/api/suggest-questions")
-def generate_questions(payload: dict):
-    category = payload.get("category", "").lower()
+def suggest_questions(payload: ProductInput):
+    category = payload.category.lower()
     if "food" in category:
         questions = ["Is the product organic?", "List ingredients.", "Any allergens?"]
     else:
         questions = ["Provide safety/compliance certifications."]
     
     collection.insert_one({
-        "name": payload.get("name", ""),
-        "category": payload.get("category", ""),
+        "name": payload.name,
+        "category": payload.category,
         "questions": questions
     })
-    
+
     return {"questions": questions}
 
-
-
-
-# to run venv\Scripts\activate
-
-# uvicorn ai-service.app:app --reload --port 5001
-# 
+@app.get("/")
+def root():
+    return {"message": "FastAPI AI service running"}

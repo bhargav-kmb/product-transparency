@@ -22,18 +22,17 @@ export default function App() {
 
   const { control, handleSubmit, reset } = useForm<Step1Form>();
 
-  // ✅ Replace with your deployed backend URLs
-  const BACKEND_BASE = "https://product-transparency-backend.vercel.app"; // Node backend
-  const AI_BASE = "https://product-transparency-backend.vercel.app"; // FastAPI AI service (if separate)
+  // ✅ Single backend for everything
+  const BACKEND_BASE = "https://product-transparency-5t79.vercel.app/";
 
-  // Step 1: Submit product info and fetch AI-generated questions
+  // Step 1: Fetch AI-generated questions
   const onStep1Submit = async (data: Step1Form) => {
     setProductData(data);
     setLoading(true);
 
     try {
       const res = await axios.post(
-        `${AI_BASE}/api/suggest-questions`,
+        `${BACKEND_BASE}/api/suggest-questions`,
         data,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -42,23 +41,24 @@ export default function App() {
         question: q,
         answer: "",
       }));
+
       setQuestions(qs);
       setStep(2);
     } catch (err) {
-      console.error("AI question fetch error:", err);
-      alert("Failed to fetch AI questions. Make sure backend is running and CORS is enabled.");
+      console.error("Failed to fetch AI questions:", err);
+      alert("Failed to fetch AI questions. Make sure backend is running.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Submit answers and save product
+  // Step 2: Save product + answers
   const onStep2Submit = async () => {
     if (!productData) return;
     setLoading(true);
 
     try {
-      const payload = { ...productData, questions }; // send questions + answers
+      const payload = { ...productData, questions };
       const res = await axios.post(
         `${BACKEND_BASE}/api/products`,
         payload,
@@ -68,14 +68,14 @@ export default function App() {
       setProductId(res.data.id);
       setStep(3);
     } catch (err) {
-      console.error("Product save error:", err);
+      console.error("Failed to save product:", err);
       alert("Failed to save product. Check backend logs.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle answer input change
+  // Handle answers input
   const handleAnswerChange = (i: number, v: string) => {
     const newQs = [...questions];
     newQs[i].answer = v;

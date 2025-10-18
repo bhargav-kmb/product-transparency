@@ -22,7 +22,8 @@ export default function App() {
 
   const { control, handleSubmit, reset } = useForm<Step1Form>();
 
-  const BACKEND_BASE = "https://product-transparency-5t79-git-main-bhargav-kmbs-projects.vercel.app/";
+  // ✅ Single backend for everything
+  const BACKEND_BASE = "http://localhost:4000";
 
   // Step 1: Fetch AI-generated questions
   const onStep1Submit = async (data: Step1Form) => {
